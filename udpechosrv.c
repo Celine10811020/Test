@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 	{
 		struct sockaddr_in csin;
 		socklen_t csinlen = sizeof(csin);
-		char buf[32768];
+		char buf[32768] = {};
 		int rlen;
 
 		if((rlen = recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*) &csin, &csinlen)) < 0) {
