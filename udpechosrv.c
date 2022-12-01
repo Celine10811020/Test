@@ -12,6 +12,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
 
 #define err_quit(m) { perror(m); exit(-1); }
 
@@ -39,65 +41,62 @@ int main(int argc, char *argv[])
 		err_quit("bind");
 
 	int status;
-	//status = mkdir("/home/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	status = mkdir("/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	status = mkdir("/home/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	//status = mkdir("/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-	FILE *output;
+	struct timeval start;
+    struct timeval end;
+    unsigned long timer;
+		gettimeofday(&start, NULL);
+
 	int i, temp;
-	int fileNum = 1;
-	char fileName[7];
-	//char filePath[20];
-	//char path[] = ".\\files\\\0";
-	char path[] = "./files/\0";
-	int fileSize;
+	//char fileContent[1000][32768] = {};
+	char fileContent[32768] = {};
+	int data;
+	int location;
+	float diff;
 
+	i = 1;
 	while(1)
 	{
+		gettimeofday(&end, NULL);
+		timer = (end.tv_sec - start.tv_sec);
+printf("timer: %ld\n", timer);
+		if(timer > 290)
+		{
+			break;
+		}
+//printf("123\n");
 		struct sockaddr_in csin;
 		socklen_t csinlen = sizeof(csin);
-		char buf[32768] = {};
+		char buf[5] = {};
 		int rlen;
-
+//printf("456\n");
 		if((rlen = recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*) &csin, &csinlen)) < 0) {
 			perror("recvfrom");
 			break;
+		}else
+		{
+			printf("receive: %s\n", buf);
 		}
-
-		printf("receive: %s\n", buf);
+//printf("789\n");
 
 		if(rlen > 0)
 		{
-			fileName[0] = '0';
-			fileName[1] = '0';
-			fileName[2] = '0';
-			fileName[3] = buf[0];
-			fileName[4] = buf[1];
-			fileName[5] = buf[2];
-			fileName[6] = '\0';
-
-			fileSize = 	(int)buf[6]*16777216 + (int)buf[5]*65536 + (int)buf[4]*256 + (int)buf[3];
-
-			char filePath[20] = {};
-			strcat(filePath, path);
-			strcat(filePath, fileName);
-
-			printf("%s\n", filePath);
-
-			char *p = buf;
-			char *pp = p + 7;
-
-			//printf("buf[0]: %p, buf[7]: %p\nbuf: %s\tp: %s(%p)\n", &buf[0], &buf[7], buf, pp, pp);
-
-			//output = fopen(fileName, "ab+");
-			output = fopen(filePath, "ab+");
-
-			fwrite(pp, fileSize, 1, output);
-
-			fclose(output);
+			location = (int)buf[3]*16777216 + (int)buf[2]*65536 + (int)buf[1]*256 + (int)buf[0];
+//printf("147\n");
+			fileContent[location] = buf[4];
+//printf("258\n");
 		}
-
-		sendto(s, buf, rlen, 0, (struct sockaddr*) &csin, sizeof(csin));
 	}
+
+	FILE *output;
+
+	char filePath[] = "./files/000008\0";
+
+	output = fopen(filePath, "wb+");
+	fwrite(fileContent, strlen(fileContent), 1, output);
+	fclose(output);
 
 	close(s);
 }
