@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 	int fileNum = 1;
 	char fileName[7];
 	char filePath[20];
+	int fileSize;
 
 	while(1)
 	{
@@ -55,7 +56,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		printf("receive: %s\n", buf);
+		//printf("receive: %s\n", buf);
 
 		if(rlen > 0)
 		{
@@ -63,13 +64,24 @@ int main(int argc, char *argv[])
 			fileName[1] = '0';
 			fileName[2] = '0';
 			fileName[3] = buf[0];
-			fileName[4] = buf[2];
-			fileName[5] = buf[3];
+			fileName[4] = buf[1];
+			fileName[5] = buf[2];
 			fileName[6] = '\0';
 
-			output = fopen(fileName, "a+");
+			fileSize = 	(int)buf[6]*16777216 + (int)buf[5]*65536 + (int)buf[4]*256 + (int)buf[3];
 
-			fwrite(buf, strlen(buf), 1, output);
+			//strcat(filePath, argv[1]);
+			//strcat(filePath, fileName);
+
+			char *p = buf;
+			char *pp = p + 7;
+
+			//printf("buf[0]: %p, buf[7]: %p\nbuf: %s\tp: %s(%p)\n", &buf[0], &buf[7], buf, pp, pp);
+
+			output = fopen(fileName, "ab+");
+			//output = fopen(filePath, "ab+");
+
+			fwrite(pp, fileSize, 1, output);
 
 			fclose(output);
 		}
@@ -77,6 +89,5 @@ int main(int argc, char *argv[])
 		sendto(s, buf, rlen, 0, (struct sockaddr*) &csin, sizeof(csin));
 	}
 
-	printf("end\n");
 	close(s);
 }
