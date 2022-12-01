@@ -10,6 +10,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define err_quit(m) { perror(m); exit(-1); }
 
@@ -36,12 +38,17 @@ int main(int argc, char *argv[])
 	if(bind(s, (struct sockaddr*) &sin, sizeof(sin)) < 0)
 		err_quit("bind");
 
+	int status;
+	//status = mkdir("/home/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	status = mkdir("/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	FILE *output;
 	int i, temp;
 	int fileNum = 1;
 	char fileName[7];
-	char filePath[20];
+	//char filePath[20];
+	//char path[] = ".\\files\\\0";
+	char path[] = "./files/\0";
 	int fileSize;
 
 	while(1)
@@ -56,7 +63,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		//printf("receive: %s\n", buf);
+		printf("receive: %s\n", buf);
 
 		if(rlen > 0)
 		{
@@ -70,16 +77,19 @@ int main(int argc, char *argv[])
 
 			fileSize = 	(int)buf[6]*16777216 + (int)buf[5]*65536 + (int)buf[4]*256 + (int)buf[3];
 
-			//strcat(filePath, argv[1]);
-			//strcat(filePath, fileName);
+			char filePath[20] = {};
+			strcat(filePath, path);
+			strcat(filePath, fileName);
+
+			printf("%s\n", filePath);
 
 			char *p = buf;
 			char *pp = p + 7;
 
 			//printf("buf[0]: %p, buf[7]: %p\nbuf: %s\tp: %s(%p)\n", &buf[0], &buf[7], buf, pp, pp);
 
-			output = fopen(fileName, "ab+");
-			//output = fopen(filePath, "ab+");
+			//output = fopen(fileName, "ab+");
+			output = fopen(filePath, "ab+");
 
 			fwrite(pp, fileSize, 1, output);
 
