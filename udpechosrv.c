@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
 	char checksum;
 	unsigned int mask = 0x000000ff;
 
+	struct stat sb;
+
 	i = 1;
 	while(1)
 	{
@@ -109,6 +111,14 @@ int main(int argc, char *argv[])
 				fseek(output, location, SEEK_SET);
 				fwrite(&buf[4], 1, 1, output);
 				fclose(output);
+
+				if(stat(filePath, &sb) == -1)
+				{
+	        perror("stat");
+	        exit(EXIT_FAILURE);
+	    	}
+
+				printf("%s size: %lu bytes\n", filePath, sb.st_size);
 
 				sendto(s, buf, rlen, 0, (struct sockaddr*) &csin, sizeof(csin));
 			}
