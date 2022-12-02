@@ -45,16 +45,31 @@ int main(int argc, char *argv[])
 	//status = mkdir("/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	struct timeval start;
-    struct timeval end;
-    unsigned long timer;
-		gettimeofday(&start, NULL);
+  struct timeval end;
+  unsigned long timer;
+	gettimeofday(&start, NULL);
 
+	FILE *output;
+	char path[] = "./files/000\0";
 	int i, temp;
-	//char fileContent[1000][32768] = {};
-	char fileContent[32768] = {};
-	int data;
-	int location;
+
+	for(i=0; i<1000; i++)
+	{
+		char fileName[4] = {};
+		char filePath[20] = {};
+		sprintf(fileName, "%03d", i);
+
+		strcat(filePath, path);
+		strcat(filePath, fileName);
+
+		printf("%s\n", filePath);
+		output = fopen(filePath, "w");
+		fclose(output);
+	}
+
+	int data, name, location;
 	float diff;
+	unsigned int mask = 0x000000ff;
 
 	i = 1;
 	while(1)
@@ -66,37 +81,40 @@ printf("timer: %ld\n", timer);
 		{
 			break;
 		}
-//printf("123\n");
+
 		struct sockaddr_in csin;
 		socklen_t csinlen = sizeof(csin);
-		char buf[5] = {};
+		unsigned char buf[5] = {};
 		int rlen;
-//printf("456\n");
+
 		if((rlen = recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*) &csin, &csinlen)) < 0) {
 			perror("recvfrom");
 			break;
 		}else
 		{
-			printf("receive: %s\n", buf);
+			printf("receive: %c %c\n", buf[1], buf[0]);
 		}
-//printf("789\n");
 
 		if(rlen > 0)
 		{
-			location = (int)buf[3]*16777216 + (int)buf[2]*65536 + (int)buf[1]*256 + (int)buf[0];
-//printf("147\n");
-			fileContent[location] = buf[4];
-//printf("258\n");
+			data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
+
+			name = data / 32768;
+			location = name % 32768;
+
+			char fileName[4] = {};
+			char filePath[20] = {};
+			sprintf(fileName, "%03d", name);
+
+			strcat(filePath, path);
+			strcat(filePath, fileName);
+
+			output = fopen(filePath, "rb+");
+			fseek(output, location, SEEK_SET);
+			fwrite(&buf[4], 1, 1, output);
+			fclose(output);
 		}
 	}
-
-	FILE *output;
-
-	char filePath[] = "./files/000008\0";
-
-	output = fopen(filePath, "wb+");
-	fwrite(fileContent, strlen(fileContent), 1, output);
-	fclose(output);
 
 	close(s);
 }
