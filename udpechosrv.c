@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #include <time.h>
 
+
 #define err_quit(m) { perror(m); exit(-1); }
 
 int main(int argc, char *argv[])
@@ -41,8 +42,8 @@ int main(int argc, char *argv[])
 		err_quit("bind");
 
 	int status;
-	status = mkdir("/home/ruby/virtual/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	//status = mkdir("/home/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	//status = mkdir("/home/ruby/virtual/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	status = mkdir("/home/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	//status = mkdir("/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	FILE *output;
@@ -62,40 +63,46 @@ int main(int argc, char *argv[])
 		fclose(output);
 	}
 
-	int data, name, location;
+	int data, name, location, fileSize;
 	char checksum;
 	unsigned int mask = 0x000000ff;
-
-	struct stat sb;
 
 	i = 1;
 	while(1)
 	{
 		struct sockaddr_in csin;
 		socklen_t csinlen = sizeof(csin);
-		unsigned char buf[6] = {};
+		unsigned char buf[512] = {};
 		int rlen;
 
 		if((rlen = recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*) &csin, &csinlen)) < 0)
 		{
 			perror("recvfrom");
 			break;
-		}else
-		{
-			//j++;
-			//printf("receive: %x %x\n", buf[1]&mask, buf[0]&mask);
 		}
 
 		if(rlen > 0)
 		{
-			checksum = buf[0] ^ buf[1] ^ buf[2] ^ buf[3] ^ buf[4];
+			data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
+			fileSize = ((int)buf[5]&mask)*256 + ((int)buf[4]&mask);
 
-			if(buf[5] == checksum)
+			name = data / 32768;
+			location = data % 32768;
+
+			printf("%d(%d): location(%d): %x\t", name, fileSize, location, buf[6]);
+
+			checksum = 0;
+			for(i=0; i<511; i++)
 			{
-				//printf("%d/%d\n", i, j);
-				//i++;
+				checksum = checksum ^ buf[i];
+			}
 
+			printf("checksum: %c\n", checksum);
+
+			if(buf[511] == checksum)
+			{
 				data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
+				fileSize = ((int)buf[5]&mask)*256 + ((int)buf[4]&mask);
 
 				name = data / 32768;
 				location = data % 32768;
@@ -107,20 +114,25 @@ int main(int argc, char *argv[])
 				strcat(filePath, path);
 				strcat(filePath, fileName);
 
+				char *p = buf;
+				char *pp = p + 6;
+
 				output = fopen(filePath, "rb+");
 				fseek(output, location, SEEK_SET);
-				fwrite(&buf[4], 1, 1, output);
+				fwrite(pp, fileSize, 1, output);
 				fclose(output);
 
-				if(stat(filePath, &sb) == -1)
+				struct stat sb;
+
+				if (stat(filePath, &sb) == -1)
 				{
 	        perror("stat");
 	        exit(EXIT_FAILURE);
 	    	}
-
 				printf("%s size: %lu bytes\n", filePath, sb.st_size);
 
-				sendto(s, buf, rlen, 0, (struct sockaddr*) &csin, sizeof(csin));
+				buf[4] = buf[511];
+				sendto(s, buf, 5, 0, (struct sockaddr*) &csin, sizeof(csin));
 			}
 		}
 	}
