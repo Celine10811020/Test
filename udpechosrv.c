@@ -42,11 +42,12 @@ int main(int argc, char *argv[])
 		err_quit("bind");
 
 	int status;
-	//status = mkdir("/home/ruby/virtual/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	//status = mkdir("/home/ruby/virtual/file", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	status = mkdir("/home/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	//status = mkdir("/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	FILE *output;
+	//char path[] = "./file/000\0";
 	char path[] = "./files/000\0";
 	int i, temp;
 
@@ -99,9 +100,9 @@ int main(int argc, char *argv[])
 				checksum = checksum ^ buf[i];
 			}
 
-			printf("checksum: %x, buf[511]: %d\n", checksum, (int)buf[511]&mask);
+			printf("checksum: %d, buf[511]: %d\n", (int)checksum&mask, (int)buf[511]&mask);
 
-			if(buf[511] == checksum)
+			if((int)buf[511]&mask == (int)checksum&mask)
 			{
 				data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
 				fileSize = ((int)buf[5]&mask)*256 + ((int)buf[4]&mask);
