@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
 	int data, name, location, fileSize;
 	char checksum;
 	unsigned int mask = 0x000000ff;
+	int one, two;
 
 	i = 1;
 	while(1)
@@ -84,8 +85,6 @@ int main(int argc, char *argv[])
 
 		if(rlen > 0)
 		{
-			printf("%s\n", buf);
-
 			data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
 			fileSize = ((int)buf[5]&mask)*256 + ((int)buf[4]&mask);
 
@@ -100,10 +99,14 @@ int main(int argc, char *argv[])
 				checksum = checksum ^ buf[i];
 			}
 
-			printf("checksum: %d, buf[511]: %d\n", (int)checksum&mask, (int)buf[511]&mask);
+			one = (int)checksum&mask;
+			two = (int)buf[511]&mask;
 
-			if((int)buf[511]&mask == (int)checksum&mask)
+			printf("checksum: %x, buf[511]: %x\n", one, two);
+
+			if(one == two)
 			{
+				printf("in\n");
 				data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
 				fileSize = ((int)buf[5]&mask)*256 + ((int)buf[4]&mask);
 
