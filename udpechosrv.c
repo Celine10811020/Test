@@ -83,6 +83,8 @@ int main(int argc, char *argv[])
 
 		if(rlen > 0)
 		{
+			printf("%s\n", buf);
+
 			data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
 			fileSize = ((int)buf[5]&mask)*256 + ((int)buf[4]&mask);
 
@@ -97,7 +99,7 @@ int main(int argc, char *argv[])
 				checksum = checksum ^ buf[i];
 			}
 
-			printf("checksum: %c\n", checksum);
+			printf("checksum: %x, buf[511]: %d\n", checksum, (int)buf[511]&mask);
 
 			if(buf[511] == checksum)
 			{
@@ -131,8 +133,15 @@ int main(int argc, char *argv[])
 	    	}
 				printf("%s size: %lu bytes\n", filePath, sb.st_size);
 
-				buf[4] = buf[511];
+				buf[4] = buf[0] ^ buf[1] ^ buf[2] ^ buf[3];
+				buf[5] = '\0';
 				sendto(s, buf, 5, 0, (struct sockaddr*) &csin, sizeof(csin));
+
+				for(i=0; i<5; i++)
+				{
+					printf("%x ", (int)buf[i]&mask);
+				}
+				printf("\n");
 			}
 		}
 	}
