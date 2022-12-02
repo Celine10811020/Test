@@ -57,13 +57,12 @@ int main(int argc, char *argv[])
 		strcat(filePath, path);
 		strcat(filePath, fileName);
 
-		printf("%s\n", filePath);
 		output = fopen(filePath, "w");
 		fclose(output);
 	}
 
 	int data, name, location;
-	float diff;
+	char checksum;
 	unsigned int mask = 0x000000ff;
 
 	i = 1;
@@ -74,32 +73,38 @@ int main(int argc, char *argv[])
 		unsigned char buf[5] = {};
 		int rlen;
 
-		if((rlen = recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*) &csin, &csinlen)) < 0) {
+		if((rlen = recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*) &csin, &csinlen)) < 0)
+		{
 			perror("recvfrom");
 			break;
 		}else
 		{
-			printf("receive: %c %c\n", buf[1], buf[0]);
+			printf("receive: %x %x\n", buf[1]&mask, buf[0]&mask);
 		}
 
 		if(rlen > 0)
 		{
-			data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
+			checksum = buf[0] ^ buf[1] ^ buf[2] ^ buf[3];
 
-			name = data / 32768;
-			location = name % 32768;
+			if(buf[5] == checksum)
+			{
+				data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
 
-			char fileName[4] = {};
-			char filePath[20] = {};
-			sprintf(fileName, "%03d", name);
+				name = data / 32768;
+				location = data % 32768;
 
-			strcat(filePath, path);
-			strcat(filePath, fileName);
+				char fileName[4] = {};
+				char filePath[20] = {};
+				sprintf(fileName, "%03d", name);
 
-			output = fopen(filePath, "rb+");
-			fseek(output, location, SEEK_SET);
-			fwrite(&buf[4], 1, 1, output);
-			fclose(output);
+				strcat(filePath, path);
+				strcat(filePath, fileName);
+
+				output = fopen(filePath, "rb+");
+				fseek(output, location, SEEK_SET);
+				fwrite(&buf[4], 1, 1, output);
+				fclose(output);
+			}
 		}
 	}
 
