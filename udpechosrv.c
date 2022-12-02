@@ -41,7 +41,8 @@ int main(int argc, char *argv[])
 		err_quit("bind");
 
 	int status;
-	status = mkdir("/home/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	status = mkdir("/home/ruby/virtual/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	//status = mkdir("/home/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	//status = mkdir("/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	FILE *output;
@@ -79,15 +80,19 @@ int main(int argc, char *argv[])
 			break;
 		}else
 		{
-			printf("receive: %x %x\n", buf[1]&mask, buf[0]&mask);
+			//j++;
+			//printf("receive: %x %x\n", buf[1]&mask, buf[0]&mask);
 		}
 
 		if(rlen > 0)
 		{
-			checksum = buf[0] ^ buf[1] ^ buf[2] ^ buf[3];
+			checksum = buf[0] ^ buf[1] ^ buf[2] ^ buf[3] ^ buf[4];
 
 			if(buf[5] == checksum)
 			{
+				//printf("%d/%d\n", i, j);
+				//i++;
+
 				data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
 
 				name = data / 32768;
@@ -104,6 +109,8 @@ int main(int argc, char *argv[])
 				fseek(output, location, SEEK_SET);
 				fwrite(&buf[4], 1, 1, output);
 				fclose(output);
+
+				//sendto(s, buf, rlen, 0, (struct sockaddr*) &csin, sizeof(csin));
 			}
 		}
 	}
