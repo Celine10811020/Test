@@ -86,12 +86,17 @@ int main(int argc, char *argv[])
 		if(rlen > 0)
 		{
 			data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
-			fileSize = ((int)buf[5]&mask)*256 + ((int)buf[4]&mask);
+
+			if(data == 2147483647)
+			{
+				break;
+			}
+			/*fileSize = ((int)buf[5]&mask)*256 + ((int)buf[4]&mask);
 
 			name = data / 32768;
 			location = data % 32768;
 
-			printf("%d(%d): location(%d): %x\t", name, fileSize, location, buf[6]);
+			printf("%d(%d): location(%d): %x\t", name, fileSize, location, buf[6]);*/
 
 			checksum = 0;
 			for(i=0; i<511; i++)
@@ -102,12 +107,12 @@ int main(int argc, char *argv[])
 			one = (int)checksum&mask;
 			two = (int)buf[511]&mask;
 
-			printf("checksum: %x, buf[511]: %x\n", one, two);
+			//printf("checksum: %x, buf[511]: %x\n", one, two);
 
 			if(one == two)
 			{
-				printf("in\n");
-				data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
+				//printf("in\n");
+				//data = ((int)buf[3]&mask)*16777216 + ((int)buf[2]&mask)*65536 + ((int)buf[1]&mask)*256 + ((int)buf[0]&mask);
 				fileSize = ((int)buf[5]&mask)*256 + ((int)buf[4]&mask);
 
 				name = data / 32768;
@@ -128,24 +133,24 @@ int main(int argc, char *argv[])
 				fwrite(pp, fileSize, 1, output);
 				fclose(output);
 
-				struct stat sb;
+				/*struct stat sb;
 
-				if (stat(filePath, &sb) == -1)
+				if(stat(filePath, &sb) == -1)
 				{
 	        perror("stat");
 	        exit(EXIT_FAILURE);
 	    	}
-				printf("%s size: %lu bytes\n", filePath, sb.st_size);
+				printf("%s size: %lu bytes\n", filePath, sb.st_size);*/
 
 				buf[4] = buf[0] ^ buf[1] ^ buf[2] ^ buf[3];
 				buf[5] = '\0';
 				sendto(s, buf, 5, 0, (struct sockaddr*) &csin, sizeof(csin));
 
-				for(i=0; i<5; i++)
+				/*for(i=0; i<5; i++)
 				{
 					printf("%x ", (int)buf[i]&mask);
 				}
-				printf("\n");
+				printf("\n");*/
 			}
 		}
 	}
