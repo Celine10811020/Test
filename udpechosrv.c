@@ -44,11 +44,6 @@ int main(int argc, char *argv[])
 	status = mkdir("/home/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	//status = mkdir("/files", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-	struct timeval start;
-  struct timeval end;
-  unsigned long timer;
-	gettimeofday(&start, NULL);
-
 	FILE *output;
 	char path[] = "./files/000\0";
 	int i, temp;
@@ -74,14 +69,6 @@ int main(int argc, char *argv[])
 	i = 1;
 	while(1)
 	{
-		gettimeofday(&end, NULL);
-		timer = (end.tv_sec - start.tv_sec);
-printf("timer: %ld\n", timer);
-		if(timer > 290)
-		{
-			break;
-		}
-
 		struct sockaddr_in csin;
 		socklen_t csinlen = sizeof(csin);
 		unsigned char buf[5] = {};
