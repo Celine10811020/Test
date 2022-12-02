@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	{
 		struct sockaddr_in csin;
 		socklen_t csinlen = sizeof(csin);
-		unsigned char buf[5] = {};
+		unsigned char buf[6] = {};
 		int rlen;
 
 		if((rlen = recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*) &csin, &csinlen)) < 0)
