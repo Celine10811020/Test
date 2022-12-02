@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 				fwrite(&buf[4], 1, 1, output);
 				fclose(output);
 
-				//sendto(s, buf, rlen, 0, (struct sockaddr*) &csin, sizeof(csin));
+				sendto(s, buf, rlen, 0, (struct sockaddr*) &csin, sizeof(csin));
 			}
 		}
 	}
