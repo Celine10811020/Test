@@ -13,6 +13,7 @@ int nodeCost[124750];
 int nodeLabel[500];
 int nodeNext[500];
 int nodeRumor[500];
+int nodeRumorLabel[500];
 int graph[500][500];
 int result[500];
 
@@ -38,7 +39,7 @@ int main()
                 graph[i][j] = -1;
             }
             nodeLabel[i] = 0;
-          	nodeNext[i] = 0;
+            nodeNext[i] = 0;
         }
 
         for(i=0; i<edge; i++)
@@ -95,9 +96,9 @@ int main()
 
         if(label < node) //graph is disconnected
         {
-            //result[index] = 2147483647;
-            //index++;
-            printf("no\n");
+            result[index] = 2147483647;
+            index++;
+            //printf("no\n");
             continue;
         }
 
@@ -128,45 +129,29 @@ int main()
                         nodeLabel[j] = temp;
                     }
                 }
-
                 nodeLabel[two] = temp;
             }
         }
 
-      for(i=1; i<node; i++)
-      {
-        if(nodeLabel[i-1] != nodeLabel[i])
-        {
-          return -1;
-        }
-      }
-
         //for plan two
         mergeSortMin(0, edge-1);
 
-        //reset nodeLabel (1)
+        //reset nodeLabel
         for(i=0; i<node; i++)
         {
-            nodeLabel[i] = 1;
+            nodeLabel[i] = i;
         }
 
-        //label rumor (2) and its neighbor (3)
+        //label rumor
+        for(i=0; i<node; i++)
+        {
+            nodeRumorLabel[i] = 0;
+        }
         for(i=0; i<rumor; i++)
         {
             temp = nodeRumor[i];
 
-            nodeLabel[temp] = 2;
-
-            for(j=0; j<node; j++)
-            {
-                if(graph[temp][j] > -1)
-                {
-                    if(nodeLabel[j] == 1)
-                    {
-                        nodeLabel[j] = 3;
-                    }
-                }
-            }
+            nodeRumorLabel[temp] = 1;
         }
 
         //count cost by rumor
@@ -176,74 +161,20 @@ int main()
             one = nodeOne[i];
             two = nodeTwo[i];
 
-            if((nodeLabel[one]==2) || (nodeLabel[two]==2))
+            if((nodeRumorLabel[one]==1) || (nodeRumorLabel[two]==1))
             {
                 planTwo = planTwo + nodeCost[i];
-            }
-        }
 
-        //reset label of rumor to 3
-        for(i=0; i<node; i++)
-        {
-            if(nodeLabel[i] == 2)
-            {
-                nodeLabel[i] = 3;
-            }
-        }
+                temp = nodeLabel[one];
 
-        //put different group of "3" into different set
-        label = 4;
-        while(1)
-        {
-            for(i=0; i<node; i++) //find "3"
-            {
-                if(nodeLabel[i] == 3)
-                {
-                    now = i;
-                    break;
-                }
-            }
-            if(i == node) //no more "3"
-            {
-                break;
-            }
-
-            nodeLabel[now] = label;
-            start = 0;
-            end = 0;
-            while(1)
-            {
                 for(j=0; j<node; j++)
                 {
-                    if(graph[now][j] > -1)
+                    if(nodeLabel[two]==nodeLabel[j] && j!=two)
                     {
-                        if(nodeLabel[j] == 3)
-                        {
-                            nodeLabel[j] = label;
-                            nodeNext[end] = j;
-                            end++;
-                        }
+                        nodeLabel[j] = temp;
                     }
                 }
-
-                if(start == end)
-                {
-                    label++;
-                    break;
-                }
-
-                now = nodeNext[start];
-                start++;
-            }
-        }
-
-        //put each "1" into different set
-        for(i=0; i<node; i++)
-        {
-            if(nodeLabel[i] == 1)
-            {
-                nodeLabel[i] = label;
-                label++;
+                nodeLabel[two] = temp;
             }
         }
 
@@ -256,34 +187,25 @@ int main()
             if(nodeLabel[one] != nodeLabel[two])
             {
                 planTwo = planTwo + nodeCost[i];
-                //temp = nodeLabel[one];
+                temp = nodeLabel[one];
 
                 for(j=0; j<node; j++)
                 {
                     if(nodeLabel[two]==nodeLabel[j] && j!=two)
                     {
-                        nodeLabel[j] = nodeLabel[one];
+                        nodeLabel[j] = temp;
                     }
                 }
-
-                nodeLabel[two] = nodeLabel[one];
+                nodeLabel[two] = temp;
             }
         }
 
-      for(i=1; i<node; i++)
-      {
-        if(nodeLabel[i-1] != nodeLabel[i])
-        {
-          return -1;
-        }
-      }
-      
-        printf("%d\n", planOne-planTwo);
-        //result[index] = planOne-planTwo;
-        //index++;
+        //printf("%d\n", planOne-planTwo);
+        result[index] = planOne-planTwo;
+        index++;
     }
 
-    /*for(i=0; i<index; i++)
+    for(i=0; i<index; i++)
     {
         if(result[i] == 2147483647)
         {
@@ -292,7 +214,7 @@ int main()
         {
             printf("%d\n", result[i]);
         }
-    }*/
+    }
 
     return 0;
 }
