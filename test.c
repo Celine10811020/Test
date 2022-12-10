@@ -62,12 +62,6 @@ int main()
             nodeRumor[i] = temp;
         }
 
-/*printf("\n\tbefore test for the connected\n");
-for(i=0; i<node; i++)
-{
-    printf("\tnodeLabel[%d]: %d\n", i, nodeLabel[i]);
-}*/
-
         //test for the connected component
         now = 0;
         label = 1;
@@ -99,13 +93,6 @@ for(i=0; i<node; i++)
             start++;
         }
 
-
-/*printf("\n\tafter test for the connected\n");
-for(i=0; i<node; i++)
-{
-    printf("\tnodeLabel[%d]: %d\n", i, nodeLabel[i]);
-}*/
-
         if(label < node) //graph is disconnected
         {
             //result[index] = 2147483647;
@@ -120,21 +107,12 @@ for(i=0; i<node; i++)
             nodeLabel[i] = i;
         }
 
-/*printf("\n\tafter put node into different set\n");
-for(i=0; i<node; i++)
-{
-    printf("\tnodeLabel[%d]: %d\n", i, nodeLabel[i]);
-}
-printf("\n");*/
-
         //MaxSpanningTree by kruskal
         mergeSortMax(0, edge-1);
 
         planOne = 0;
         for(i=0; i<edge; i++)
         {
-//printf("\t%d %d %d\n", nodeOne[i], nodeTwo[i], nodeCost[i]);
-
             one = nodeOne[i];
             two = nodeTwo[i];
 
@@ -152,11 +130,6 @@ printf("\n");*/
                 }
 
                 nodeLabel[two] = temp;
-
-//printf("\t\tnodeOne %d and nodeTwo %d is not in the different set, planOne=%d\n", one, two, planOne);
-            }else
-            {
-//printf("\t\tnodeOne %d and nodeTwo %d is in the same set, planOne=%d\n", one, two, planOne);
             }
         }
 
@@ -167,14 +140,6 @@ printf("\n");*/
           return -1;
         }
       }
-      
-/*printf("\n\tplanOne: %d\n", planOne);
-
-printf("\n\tin the beginning of plan two\n");
-for(i=0; i<node; i++)
-{
-    printf("\tnodeLabel[%d]: %d\n", i, nodeLabel[i]);
-}*/
 
         //for plan two
         mergeSortMin(0, edge-1);
@@ -184,12 +149,6 @@ for(i=0; i<node; i++)
         {
             nodeLabel[i] = 1;
         }
-
-/*printf("\n\tafter reset node label (1)\n");
-for(i=0; i<node; i++)
-{
-    printf("\tnodeLabel[%d]: %d\n", i, nodeLabel[i]);
-}*/
 
         //label rumor (2) and its neighbor (3)
         for(i=0; i<rumor; i++)
@@ -210,26 +169,16 @@ for(i=0; i<node; i++)
             }
         }
 
-/*printf("\n\tafter label with rumor (2) and its neighbor (3)\n");
-for(i=0; i<node; i++)
-{
-    printf("\tnodeLabel[%d]: %d\n", i, nodeLabel[i]);
-}
-printf("\n\tcounting the cost of rumor\n");*/
-
         //count cost by rumor
         planTwo = 0;
         for(i=0; i<edge; i++)
         {
-//printf("\t%d %d %d\n", nodeOne[i], nodeTwo[i], nodeCost[i]);
-
             one = nodeOne[i];
             two = nodeTwo[i];
 
             if((nodeLabel[one]==2) || (nodeLabel[two]==2))
             {
                 planTwo = planTwo + nodeCost[i];
-//printf("\t\tnodeOne %d or nodeTwo %d is rumor, planTwo=%d\n", one, two, planTwo);
             }
         }
 
@@ -298,19 +247,9 @@ printf("\n\tcounting the cost of rumor\n");*/
             }
         }
 
-
-/*printf("\n\tput in different set\n");
-for(i=0; i<node; i++)
-{
-    printf("\tnodeLabel[%d]: %d\n", i, nodeLabel[i]);
-}
-printf("\n\tcount for MST\n");*/
-
         //MST by kruskal
         for(i=0; i<edge; i++)
         {
-//printf("\t%d %d %d\n", nodeOne[i], nodeTwo[i], nodeCost[i]);
-
             one = nodeOne[i];
             two = nodeTwo[i];
 
@@ -328,23 +267,8 @@ printf("\n\tcount for MST\n");*/
                 }
 
                 nodeLabel[two] = nodeLabel[one];
-
-//printf("\t\tnodeOne %d and nodeTwo %d is not in the different set, planTwo=%d\n", one, two, planTwo);
-            }else
-            {
-//printf("\t\tnodeOne %d and nodeTwo %d is in the same set, planTwo=%d\n", one, two, planTwo);
             }
         }
-
-/*printf("\n\tplanTwo: %d\n", planTwo);
-
-printf("\n");
-for(i=0; i<node; i++)
-{
-    printf("\tnodeLabel[%d]: %d\n", i, nodeLabel[i]);
-}
-
-printf("\n\tans: %d\n", planOne-planTwo);*/
 
       for(i=1; i<node; i++)
       {
