@@ -165,16 +165,20 @@ int main()
             {
                 planTwo = planTwo + nodeCost[i];
 
-                temp = nodeLabel[one];
-
-                for(j=0; j<node; j++)
+                if(nodeLabel[one] != nodeLabel[two])
                 {
-                    if(nodeLabel[two]==nodeLabel[j] && j!=two)
+                    temp = nodeLabel[one];
+
+                    for(j=0; j<node; j++)
                     {
-                        nodeLabel[j] = temp;
+                        if(nodeLabel[two]==nodeLabel[j] && j!=two)
+                        {
+                            nodeLabel[j] = temp;
+                        }
                     }
+
+                    nodeLabel[two] = temp;
                 }
-                nodeLabel[two] = temp;
             }
         }
 
